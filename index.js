@@ -51,6 +51,23 @@ async function run() {
       res.send(products);
     });
 
+    app.get("/seller/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const query = { email: email };
+      const result = await productCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get("/seller", async (req, res) => {
+      const query = { type: "seller" };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get("/user", async (req, res) => {
+      const query = { type: "user" };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
     app.post("/products", async (req, res) => {
       const name = req.body;
       // const query = { category_Name: name };
