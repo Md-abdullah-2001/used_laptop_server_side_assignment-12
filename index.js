@@ -1,5 +1,6 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 
@@ -33,6 +34,7 @@ async function run() {
       .db("gadgetBazar")
       .collection("all_products");
     const bookingCollection = client.db("gadgetBazar").collection("bookings");
+    const userCollection = client.db("gadgetBazar").collection("users");
 
     // get category API
     app.get("/category", async (req, res) => {
@@ -41,11 +43,18 @@ async function run() {
       res.send(categories);
     });
 
-    app.get("/category/:id", async (req, res) => {
-      const id = req.params.id;
-      console.log(id);
-      const query = { category_id: id };
+    app.get("/category/:name", async (req, res) => {
+      const name = req.params.name;
+      console.log(name);
+      const query = { category_Name: name };
       const products = await productCollection.find(query).toArray();
+      res.send(products);
+    });
+
+    app.post("/products", async (req, res) => {
+      const name = req.body;
+      // const query = { category_Name: name };
+      const products = await productCollection.insertOne(name);
       res.send(products);
     });
 
@@ -53,8 +62,7 @@ async function run() {
 
     app.post("/booking", async (req, res) => {
       const bookings = req.body;
-      // const name = req.body.product_name;
-      // const email = req.body.email;
+
       const query = {
         product_name: bookings.product_name,
         email: bookings.email,
@@ -71,9 +79,43 @@ async function run() {
 
     app.get("/booking", async (req, res) => {
       const email = req.query.email;
+      console.log("tokenr", req.headers.authorization);
       const query = { email: email };
       const result = await bookingCollection.find(query).toArray();
       res.send(result);
+    });
+
+    // user api
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+    app.get("/users", async (req, res) => {
+      const quey = {};
+      const users = await userCollection.find(quey).toArray();
+      res.send(users);
+    });
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ isAdmin: user?.type });
+    });
+
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "7d",
+        });
+        return res.send({ accessToken: token });
+      }
+      console.log(user);
+      res.status(403).send({ accessToken: "" });
     });
   } finally {
   }
