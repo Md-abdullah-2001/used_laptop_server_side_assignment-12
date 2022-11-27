@@ -45,7 +45,7 @@ async function run() {
 
     app.get("/category/:name", async (req, res) => {
       const name = req.params.name;
-      console.log(name);
+      // console.log(name);
       const query = { category_Name: name };
       const products = await productCollection.find(query).toArray();
       res.send(products);
@@ -58,16 +58,35 @@ async function run() {
       const result = await productCollection.find(query).toArray();
       res.send(result);
     });
+
+    // sellers and delete users
     app.get("/seller", async (req, res) => {
       const query = { type: "seller" };
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
+    app.delete("/seller/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // users and delete users
     app.get("/user", async (req, res) => {
       const query = { type: "user" };
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
+    app.delete("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.post("/products", async (req, res) => {
       const name = req.body;
       // const query = { category_Name: name };
