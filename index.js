@@ -89,7 +89,7 @@ async function run() {
 
     app.post("/products", async (req, res) => {
       const name = req.body;
-      // const query = { category_Name: name };
+
       const products = await productCollection.insertOne(name);
       res.send(products);
     });
@@ -110,6 +110,13 @@ async function run() {
         return res.send({ acknowledged: false, message });
       }
       const result = await bookingCollection.insertOne(bookings);
+      res.send(result);
+    });
+
+    app.get("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await bookingCollection.findOne(query);
       res.send(result);
     });
 
